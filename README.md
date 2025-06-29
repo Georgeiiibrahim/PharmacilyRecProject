@@ -1,4 +1,4 @@
-# Product Recommendation System
+# PharmacilyRecProject
 
 A Laravel-based product recommendation system with an admin panel for managing products, merchants, and users. The system provides personalized product recommendations based on user interactions and browsing history.
 
@@ -48,7 +48,6 @@ A Laravel-based product recommendation system with an admin panel for managing p
 
 1. **Clone or download the project**
    ```bash
-   cd recommendation-system
    ```
 
 2. **Install dependencies**
@@ -64,9 +63,31 @@ A Laravel-based product recommendation system with an admin panel for managing p
 
 4. **Configure database**
    Edit `.env` file and set your database configuration:
+
+   **For SQLite (default):**
    ```env
    DB_CONNECTION=sqlite
    DB_DATABASE=/absolute/path/to/database.sqlite
+   ```
+
+   **For MySQL:**
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=pharmacilyrecproject
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   ```
+
+   **For PostgreSQL:**
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=pharmacilyrecproject
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
    ```
 
 5. **Run migrations**
@@ -147,7 +168,7 @@ The system uses a simple but effective recommendation algorithm:
 ## File Structure
 
 ```
-recommendation-system/
+PharmacilyRecProject/
 ├── app/
 │   ├── Http/Controllers/
 │   │   ├── AdminController.php
