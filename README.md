@@ -48,6 +48,8 @@ A Laravel-based product recommendation system with an admin panel for managing p
 
 1. **Clone or download the project**
    ```bash
+   git clone -b dev https://github.com/your-username/PharmacilyRecProject.git
+   cd PharmacilyRecProject
    ```
 
 2. **Install dependencies**
