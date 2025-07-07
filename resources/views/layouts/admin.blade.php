@@ -72,12 +72,12 @@
                                 Products
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.merchants*') ? 'active' : '' }}" href="{{ route('admin.merchants') }}">
                                 <i class="fas fa-store me-2"></i>
                                 Merchants
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.users') }}">
                                 <i class="fas fa-users me-2"></i>

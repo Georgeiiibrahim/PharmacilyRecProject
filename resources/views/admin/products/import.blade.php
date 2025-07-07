@@ -34,6 +34,21 @@
                         <div class="form-text">
                             Supported formats: .xlsx, .xls, .csv (Max size: 10MB)
                         </div>
+                        <button type="button" id="preview-btn" class="btn btn-info btn-sm mt-2">
+                            <i class="fas fa-eye me-1"></i>Preview File
+                        </button>
+                    </div>
+
+                    <!-- Preview Results -->
+                    <div id="preview-results" class="mb-4" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">File Preview</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="preview-content"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -185,4 +200,72 @@
     margin-bottom: 0.5rem;
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#preview-btn').click(function() {
+        const fileInput = $('#excel_file')[0];
+        if (!fileInput.files.length) {
+            alert('Please select a file first.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('excel_file', fileInput.files[0]);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        $('#preview-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Loading...');
+
+        $.ajax({
+            url: '{{ route("admin.products.preview-excel") }}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                let content = '<h6>Headers Found:</h6>';
+                content += '<div class="mb-3"><code>' + response.headers.join(', ') + '</code></div>';
+                
+                content += '<h6>First 5 Rows Preview:</h6>';
+                content += '<div class="table-responsive"><table class="table table-sm table-bordered">';
+                
+                // Header row
+                content += '<thead><tr>';
+                response.headers.forEach(function(header) {
+                    content += '<th>' + header + '</th>';
+                });
+                content += '</tr></thead>';
+                
+                // Data rows
+                content += '<tbody>';
+                response.preview_rows.forEach(function(row) {
+                    content += '<tr>';
+                    row.forEach(function(cell) {
+                        content += '<td>' + (cell || '') + '</td>';
+                    });
+                    content += '</tr>';
+                });
+                content += '</tbody></table></div>';
+                
+                content += '<p class="text-muted">Total rows: ' + response.total_rows + '</p>';
+                
+                $('#preview-content').html(content);
+                $('#preview-results').show();
+            },
+            error: function(xhr) {
+                let errorMsg = 'Error loading preview';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                alert(errorMsg);
+            },
+            complete: function() {
+                $('#preview-btn').prop('disabled', false).html('<i class="fas fa-eye me-1"></i>Preview File');
+            }
+        });
+    });
+});
+</script>
 @endpush 

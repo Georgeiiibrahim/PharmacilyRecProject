@@ -89,6 +89,81 @@
     </div>
 </div>
 
+<!-- Visitor Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Total Visitors
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $visitorStats['total_visitors'] ?? 0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-eye fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-secondary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                            Today's Visitors
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $visitorStats['today_visitors'] ?? 0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-dark shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">
+                            Unique Visitors
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $visitorStats['unique_visitors'] ?? 0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-friends fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-light shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-muted text-uppercase mb-1">
+                            Bounce Rate
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $visitorStats['bounce_rate'] ?? 0 }}%</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Revenue by Site -->
 <div class="row mb-4">
     <div class="col-12">
@@ -235,6 +310,7 @@
                                 <th>Site</th>
                                 <th>Units</th>
                                 <th>Region</th>
+                                <th>City</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -245,8 +321,259 @@
                                     <td>{{ $order->site->name ?? 'N/A' }}</td>
                                     <td>{{ $order->units }}</td>
                                     <td>{{ $order->region ?? 'N/A' }}</td>
+                                    <td>{{ $order->city ?? 'N/A' }}</td>
                                 </tr>
                             @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Region Analytics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="fas fa-globe me-2"></i>Revenue by Region
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Region</th>
+                                <th>Total Revenue</th>
+                                <th>Orders</th>
+                                <th>Units Sold</th>
+                                <th>Avg. Order Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($regionAnalytics as $region)
+                                <tr>
+                                    <td>{{ $region->region }}</td>
+                                    <td>${{ number_format($region->total_revenue ?? 0, 2) }}</td>
+                                    <td>{{ number_format($region->order_count ?? 0) }}</td>
+                                    <td>{{ number_format($region->total_units ?? 0) }}</td>
+                                    <td>${{ number_format($region->avg_order_value ?? 0, 2) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">No region data available</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- City Analytics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-city me-2"></i>Revenue by City
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>City</th>
+                                <th>Total Revenue</th>
+                                <th>Orders</th>
+                                <th>Units Sold</th>
+                                <th>Avg. Order Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($cityAnalytics as $city)
+                                <tr>
+                                    <td>{{ $city->city }}</td>
+                                    <td>${{ number_format($city->total_revenue ?? 0, 2) }}</td>
+                                    <td>{{ number_format($city->order_count ?? 0) }}</td>
+                                    <td>{{ number_format($city->total_units ?? 0) }}</td>
+                                    <td>${{ number_format($city->avg_order_value ?? 0, 2) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">No city data available</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Method Analytics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-credit-card me-2"></i>Revenue by Payment Method
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Payment Method</th>
+                                <th>Total Revenue</th>
+                                <th>Orders</th>
+                                <th>Units Sold</th>
+                                <th>Avg. Order Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($paymentMethodAnalytics as $payment)
+                                <tr>
+                                    <td>{{ $payment->payment_method }}</td>
+                                    <td>${{ number_format($payment->total_revenue ?? 0, 2) }}</td>
+                                    <td>{{ number_format($payment->order_count ?? 0) }}</td>
+                                    <td>{{ number_format($payment->total_units ?? 0) }}</td>
+                                    <td>${{ number_format($payment->avg_order_value ?? 0, 2) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">No payment method data available</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Visitor Analytics -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-chart-pie me-2"></i>Top Pages by Visits
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Page</th>
+                                <th>Visits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($visitorAnalytics['top_pages'] ?? [] as $page)
+                                <tr>
+                                    <td>{{ Str::limit($page->page_url, 50) }}</td>
+                                    <td>{{ number_format($page->visit_count) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2" class="text-center">No page data available</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="fas fa-desktop me-2"></i>Device Breakdown
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Device</th>
+                                <th>Visitors</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $totalDeviceVisitors = ($visitorAnalytics['device_stats'] ?? collect())->sum('count');
+                            @endphp
+                            @forelse($visitorAnalytics['device_stats'] ?? [] as $device)
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-{{ $device->device_type == 'mobile' ? 'mobile-alt' : ($device->device_type == 'tablet' ? 'tablet-alt' : 'desktop') }} me-2"></i>
+                                        {{ ucfirst($device->device_type) }}
+                                    </td>
+                                    <td>{{ number_format($device->count) }}</td>
+                                    <td>{{ $totalDeviceVisitors > 0 ? round(($device->count / $totalDeviceVisitors) * 100, 1) : 0 }}%</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center">No device data available</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Browser Analytics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-globe me-2"></i>Browser Analytics
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Browser</th>
+                                <th>Visitors</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $totalBrowserVisitors = ($visitorAnalytics['browser_stats'] ?? collect())->sum('count');
+                            @endphp
+                            @forelse($visitorAnalytics['browser_stats'] ?? [] as $browser)
+                                <tr>
+                                    <td>{{ $browser->browser }}</td>
+                                    <td>{{ number_format($browser->count) }}</td>
+                                    <td>{{ $totalBrowserVisitors > 0 ? round(($browser->count / $totalBrowserVisitors) * 100, 1) : 0 }}%</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center">No browser data available</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -271,11 +598,11 @@
                             <i class="fas fa-box me-2"></i>Manage Products
                         </a>
                     </div>
-                    <div class="col-6 mb-3">
+                    <!-- <div class="col-6 mb-3">
                         <a href="{{ route('admin.merchants') }}" class="btn btn-outline-secondary w-100">
                             <i class="fas fa-store me-2"></i>Manage Merchants
                         </a>
-                    </div>
+                    </div> -->
                     <div class="col-6 mb-3">
                         <a href="{{ route('admin.users') }}" class="btn btn-outline-info w-100">
                             <i class="fas fa-users me-2"></i>Manage Users
@@ -285,6 +612,16 @@
                         <a href="{{ route('admin.products.import.form') }}" class="btn btn-outline-success w-100">
                             <i class="fas fa-file-excel me-2"></i>Import Data
                         </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <button type="button" class="btn btn-outline-warning w-100" onclick="refreshData()">
+                            <i class="fas fa-sync-alt me-2"></i>Fresh & Seed
+                        </button>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <button type="button" class="btn btn-outline-danger w-100" onclick="seedDatabase()">
+                            <i class="fas fa-seedling me-2"></i>Seed Database
+                        </button>
                     </div>
                 </div>
             </div>
@@ -320,4 +657,87 @@
     font-size: 0.7rem;
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+function refreshData() {
+    if (confirm('Are you sure you want to refresh and seed the database? This will drop all tables, recreate them, and populate with sample data (WARNING: This will delete all existing data!).')) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Refreshing & Seeding...';
+        
+        // Make AJAX request to refresh and seed database
+        fetch('{{ route("admin.dashboard.refresh") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Database refreshed and seeded successfully! ' + data.message);
+                // Redirect to login page instead of reloading
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    location.reload();
+                }
+            } else {
+                alert('Error refreshing database: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error refreshing database. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+}
+
+function seedDatabase() {
+    if (confirm('Are you sure you want to seed the database? This will add sample data and may take a moment.')) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Seeding...';
+        
+        // Make AJAX request to seed database
+        fetch('{{ route("admin.dashboard.seed") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Database seeded successfully! ' + data.message);
+                location.reload();
+            } else {
+                alert('Error seeding database: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error seeding database. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+}
+</script>
 @endpush 

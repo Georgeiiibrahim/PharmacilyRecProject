@@ -33,11 +33,10 @@
                             <th>Image</th>
                             <th>Name</th>
                             <th>Category</th>
-                            <th>Brand</th>
-                            <th>Price</th>
+                            <!-- <th>Price</th>
                             <th>Stock</th>
                             <th>Status</th>
-                            <th>Merchants</th>
+                            <th>Merchants</th> -->
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -64,8 +63,7 @@
                                 <td>
                                     <span class="badge bg-secondary">{{ $product->category }}</span>
                                 </td>
-                                <td>{{ $product->brand ?? 'N/A' }}</td>
-                                <td>
+                                <!-- <td>
                                     <strong class="text-primary">${{ number_format($product->price, 2) }}</strong>
                                 </td>
                                 <td>
@@ -82,7 +80,7 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-info">{{ $product->merchants->count() }} merchants</span>
-                                </td>
+                                </td> -->
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('products.show', $product) }}" 
