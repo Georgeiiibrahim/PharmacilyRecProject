@@ -20,6 +20,7 @@ class Order extends Model
         'month',
         'payment_method',
         'region',
+        'city',
     ];
 
     public function customer()

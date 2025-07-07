@@ -12,14 +12,18 @@ use App\Http\Controllers\RecommendationController;
 */
 
 // Public routes (no login required)
-Route::get('/', [RecommendationController::class, 'index'])->name('home');
-Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
-Route::get('/search', [RecommendationController::class, 'search'])->name('products.search');
+Route::middleware('track.visitors')->group(function () {
+    Route::get('/', [RecommendationController::class, 'index'])->name('home');
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+    Route::get('/search', [RecommendationController::class, 'search'])->name('products.search');
+});
 
 // Recommendations
-Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations');
-Route::get('/recommendations/filter-options', [RecommendationController::class, 'getFilterOptions'])->name('recommendations.filter-options');
+Route::middleware('track.visitors')->group(function () {
+    Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations');
+    Route::get('/recommendations/filter-options', [RecommendationController::class, 'getFilterOptions'])->name('recommendations.filter-options');
+});
 
 // Admin routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -46,8 +50,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
         Route::get('/products/import', [ProductController::class, 'importForm'])->name('products.import.form');
         Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
+        Route::post('/products/preview-excel', [ProductController::class, 'previewExcel'])->name('products.preview-excel');
         
         // Merchant management
         Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
+        
+        // Dashboard actions
+        Route::post('/dashboard/seed', [AdminController::class, 'seedDatabase'])->name('dashboard.seed');
+        Route::post('/dashboard/refresh', [AdminController::class, 'refreshDatabase'])->name('dashboard.refresh');
     });
 });

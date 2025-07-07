@@ -24,6 +24,7 @@ class RecommendationController extends Controller
         $site = $request->get('site');
         $type = $request->get('type');
         $region = $request->get('region');
+        $city = $request->get('city');
         
         $query = Product::select('products.*')
             ->join('orders', 'products.id', '=', 'orders.product_id')
@@ -43,6 +44,11 @@ class RecommendationController extends Controller
         // Filter by region if specified
         if ($region) {
             $query->where('orders.region', $region);
+        }
+        
+        // Filter by city if specified
+        if ($city) {
+            $query->where('orders.city', $city);
         }
         
         // Get products ordered by total units sold
@@ -173,10 +179,17 @@ class RecommendationController extends Controller
             ->orderBy('region')
             ->pluck('region');
             
+        $cities = Order::select('city')
+            ->whereNotNull('city')
+            ->groupBy('city')
+            ->orderBy('city')
+            ->pluck('city');
+            
         return response()->json([
             'sites' => $sites,
             'types' => $types,
-            'regions' => $regions
+            'regions' => $regions,
+            'cities' => $cities
         ]);
     }
 } 

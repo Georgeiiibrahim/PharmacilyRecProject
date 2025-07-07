@@ -125,6 +125,39 @@ class ProductController extends Controller
         return view('admin.products.import');
     }
 
+    public function previewExcel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Invalid file'], 400);
+        }
+
+        try {
+            $file = $request->file('excel_file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+            
+            // Get headers (first row)
+            $headers = array_shift($rows);
+            
+            // Get first 5 data rows for preview
+            $previewRows = array_slice($rows, 0, 5);
+            
+            return response()->json([
+                'headers' => $headers,
+                'preview_rows' => $previewRows,
+                'total_rows' => count($rows)
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error reading file: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function import(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -146,6 +179,31 @@ class ProductController extends Controller
             // Remove header row
             $headers = array_shift($rows);
             
+            // Debug: Log the headers to help identify column names
+            \Log::info('Excel Headers:', $headers);
+            
+            // Normalize headers (trim whitespace and convert to lowercase for matching)
+            $normalizedHeaders = array_map(function($header) {
+                return trim(strtolower($header));
+            }, $headers);
+            
+            // Create a mapping of normalized headers to original headers
+            $headerMapping = array_combine($normalizedHeaders, $headers);
+            
+            // Helper function to find column value with flexible matching
+            $getColumnValue = function($possibleNames, $rowData, $headerMapping) {
+                foreach ($possibleNames as $name) {
+                    $normalizedName = trim(strtolower($name));
+                    if (isset($headerMapping[$normalizedName])) {
+                        $originalHeader = $headerMapping[$normalizedName];
+                        if (isset($rowData[$originalHeader]) && !empty($rowData[$originalHeader])) {
+                            return $rowData[$originalHeader];
+                        }
+                    }
+                }
+                return null;
+            };
+            
             $importedCount = 0;
             $errors = [];
             
@@ -155,35 +213,43 @@ class ProductController extends Controller
                     
                     // Create or find customer
                     $customer = null;
-                    if (!empty($rowData['Name'])) {
+                    $customerName = $getColumnValue(['Name', 'name', 'NAME'], $rowData, $headerMapping);
+                    if (!empty($customerName)) {
+                        $customerGender = $getColumnValue(['Gender', 'gender', 'GENDER'], $rowData, $headerMapping);
+                        $customerCity = $getColumnValue(['City', 'city', 'CITY'], $rowData, $headerMapping);
+                        $customerRegion = $getColumnValue(['Region', 'region', 'REGION'], $rowData, $headerMapping);
+                        
                         $customer = Customer::firstOrCreate(
-                            ['name' => $rowData['Name']],
+                            ['name' => $customerName],
                             [
-                                'gender' => $this->normalizeGender($rowData['Gender'] ?? ''),
-                                'city' => $rowData['City'] ?? null,
-                                'region' => $rowData['Region'] ?? null,
+                                'gender' => $this->normalizeGender($customerGender ?? ''),
+                                'city' => $customerCity,
+                                'region' => $customerRegion,
                             ]
                         );
                     }
                     
                     // Create or find site
                     $site = null;
-                    if (!empty($rowData['Site'])) {
+                    $siteName = $getColumnValue(['Site', 'site', 'SITE'], $rowData, $headerMapping);
+                    if (!empty($siteName)) {
                         $site = Site::firstOrCreate(
-                            ['name' => $rowData['Site']],
+                            ['name' => $siteName],
                             ['description' => 'Imported from Excel']
                         );
                     }
                     
                     // Create or find product
                     $product = null;
-                    if (!empty($rowData['Product'])) {
+                    $productName = $getColumnValue(['Product', 'product', 'PRODUCT'], $rowData, $headerMapping);
+                    if (!empty($productName)) {
+                        $productType = $getColumnValue(['Type', 'type', 'TYPE'], $rowData, $headerMapping);
                         $product = Product::firstOrCreate(
-                            ['name' => $rowData['Product']],
+                            ['name' => $productName],
                             [
                                 'description' => 'Imported from Excel',
                                 'price' => 0, // Default price since not in Excel
-                                'category' => $rowData['Type'] ?? 'General',
+                                'category' => $productType ?? 'General',
                                 'brand' => null,
                                 'stock_quantity' => 0,
                                 'is_active' => true,
@@ -193,21 +259,31 @@ class ProductController extends Controller
                     
                     // Create order
                     if ($product && $customer && $site) {
-                        // Handle revenue: try 'Revenue', then '$', then 0
-                        $value = $rowData['Revenue'] ?? ($rowData['$'] ?? '');
-                        $revenue = floatval(preg_replace('/[^\d.]/', '', str_replace(' ', '', $value)));
+                        // Handle revenue: try multiple possible column names
+                        $revenueValue = $getColumnValue(['Revenue', 'revenue', 'REVENUE', '$', 'Amount', 'amount'], $rowData, $headerMapping);
+                        $revenue = floatval(preg_replace('/[^\d.]/', '', str_replace(' ', '', $revenueValue ?? '0')));
+
+                        // Get order details with flexible column matching
+                        $units = $getColumnValue(['Units', 'units', 'UNITS', 'Quantity', 'quantity'], $rowData, $headerMapping);
+                        $orderType = $getColumnValue(['Type', 'type', 'TYPE'], $rowData, $headerMapping);
+                        $orderDate = $getColumnValue(['ORDER DATE', 'Order Date', 'order_date', 'OrderDate', 'Date', 'date'], $rowData, $headerMapping);
+                        $month = $getColumnValue(['Month', 'month', 'MONTH'], $rowData, $headerMapping);
+                        $paymentMethod = $getColumnValue(['payment method', 'Payment Method', 'payment_method', 'PaymentMethod'], $rowData, $headerMapping);
+                        $region = $getColumnValue(['Region', 'region', 'REGION'], $rowData, $headerMapping);
+                        $city = $getColumnValue(['City', 'city', 'CITY'], $rowData, $headerMapping);
 
                         Order::create([
                             'customer_id' => $customer->id,
                             'product_id' => $product->id,
                             'site_id' => $site->id,
-                            'units' => intval($rowData['Units'] ?? 1),
+                            'units' => intval($units ?? 1),
                             'revenue' => $revenue,
-                            'type' => $rowData['Type'] ?? null,
-                            'order_date' => $this->parseDate($rowData['ORDER DATE'] ?? null),
-                            'month' => $rowData['Month'] ?? null,
-                            'payment_method' => $rowData['payment method'] ?? null,
-                            'region' => $rowData['Region'] ?? null,
+                            'type' => $orderType,
+                            'order_date' => $this->parseDate($orderDate),
+                            'month' => $month,
+                            'payment_method' => $paymentMethod,
+                            'region' => $region,
+                            'city' => $city,
                         ]);
                         
                         $importedCount++;

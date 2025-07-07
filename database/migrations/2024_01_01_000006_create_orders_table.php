@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('month')->nullable();
             $table->string('payment_method')->nullable();
             $table->string('region')->nullable(); // Redundant, but for fast queries
+            $table->string('city')->nullable(); // Redundant, but for fast queries
+
             $table->timestamps();
         });
     }

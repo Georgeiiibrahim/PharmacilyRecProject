@@ -24,7 +24,7 @@
                 </div>
                 <div class="card-body">
                     <form method="GET" action="{{ route('recommendations') }}" class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="site" class="form-label">Site</label>
                             <select class="form-select" id="site" name="site">
                                 <option value="">All Sites</option>
@@ -35,7 +35,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="type" class="form-label">Product Type</label>
                             <select class="form-select" id="type" name="type">
                                 <option value="">All Types</option>
@@ -46,7 +46,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="region" class="form-label">Region</label>
                             <select class="form-select" id="region" name="region">
                                 <option value="">All Regions</option>
@@ -57,7 +57,18 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <label for="city" class="form-label">City</label>
+                            <select class="form-select" id="city" name="city">
+                                <option value="">All Cities</option>
+                                @foreach($cities ?? [] as $city)
+                                    <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>
+                                        {{ $city }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">&nbsp;</label>
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-danger">
@@ -275,6 +286,12 @@ $(document).ready(function() {
             var regionSelect = $('#region');
             data.regions.forEach(function(region) {
                 regionSelect.append(new Option(region, region));
+            });
+            
+            // Populate city options
+            var citySelect = $('#city');
+            data.cities.forEach(function(city) {
+                citySelect.append(new Option(city, city));
             });
         });
 });
